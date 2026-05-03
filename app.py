@@ -68,7 +68,7 @@ with st.sidebar:
     st.write("**Optional:** Assets, Liabilities, Cash_Flow")
     st.markdown("---")
     st.markdown("### 🔧 Tech Stack")
-    st.write("- Python\n- Pandas + NumPy\n- Hugging Face Transformers\n- Streamlit")
+    st.write("- Python\n- Pandas + NumPy\n- Gemini API\n- Streamlit")
 
 
 tab1, tab2, tab3 = st.tabs(["📤 Upload & Analyze", "📈 Visualize", "📄 Generate Report"])
@@ -86,7 +86,7 @@ with tab1:
     with col_right:
         st.write("")
         st.write("")
-        use_sample = st.button("📥 Use Sample Data", use_container_width=True)
+        use_sample = st.button("📥 Use Sample Data", width='stretch')
 
     if uploaded is not None:
         try:
@@ -110,7 +110,7 @@ with tab1:
         pkg = st.session_state.package
 
         st.markdown("### Preview")
-        st.dataframe(df.head(10), use_container_width=True)
+        st.dataframe(df.head(10), width='stretch')
 
         st.markdown("### Key Metrics")
         m = pkg["metrics"]
@@ -129,7 +129,7 @@ with tab1:
         anomalies = pkg["trends"].get("anomalies", [])
         if anomalies:
             st.warning(f"⚠️ {len(anomalies)} anomaly period(s) detected (>2 std dev).")
-            st.dataframe(pd.DataFrame(anomalies), use_container_width=True)
+            st.dataframe(pd.DataFrame(anomalies), width='stretch')
 
 with tab2:
     st.subheader("Trend Visualizations")
@@ -157,8 +157,8 @@ with tab3:
     else:
         company = st.text_input("Company / Entity name:", value="Sample Corp")
 
-        if st.button("🚀 Generate Report", use_container_width=True):
-            with st.spinner("Generating narrative with AI... (first run downloads model)"):
+        if st.button("🚀 Generate Report", width='stretch'):
+            with st.spinner("Generating narrative with AI..."):
                 pkg = st.session_state.package
                 report_text = assemble_report(pkg, company_name=company)
 
@@ -196,7 +196,7 @@ st.markdown("---")
 st.markdown(
     "<div style='text-align:center; color:gray; font-size:12px;'>"
     "Financial Report Generation System | Gopesh Aggarwal (2301730158) | "
-    "Powered by Hugging Face & Transformers"
+    "Powered by Gemini API"
     "</div>",
     unsafe_allow_html=True
 )

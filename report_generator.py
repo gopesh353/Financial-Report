@@ -4,107 +4,46 @@ Author: Gopesh Aggarwal
 Roll No: 2301730158
 
 Description:
-Uses a Hugging Face text generation model (GPT-2) to turn structured
+Uses the Gemini API (gemini-3.1-flash-lite model) to turn structured
 financial metrics into a natural-language executive summary, with
 deterministic template fallbacks for reliability.
 """
 
-import warnings
-warnings.filterwarnings('ignore', category=DeprecationWarning)
-warnings.filterwarnings('ignore', message='.*torchvision.*')
-
 import os
-import requests
 from datetime import datetime
+from google import genai
+from google.genai import types
+from dotenv import load_dotenv
 
-generator = None
-
-
-def _get_local_generator():
-    """Lazy-load a local text generation model for offline fallback."""
-    global generator
-    if generator is not None:
-        return generator
-
-    try:
-        from transformers import pipeline
-    except ImportError as exc:
-        raise RuntimeError(
-            "transformers is not installed. Install requirements or configure HF_API_TOKEN."
-        ) from exc
-
-    try:
-        generator = pipeline("text-generation", model="distilgpt2", device=-1)
-    except Exception:
-        generator = pipeline("text-generation", model="gpt2", device=-1)
-    return generator
-
-
-def _api_polish(prompt, max_new_tokens=90):
-    """Use Hugging Face Inference API when HF_API_TOKEN is configured."""
-    token = os.getenv("HF_API_TOKEN", "").strip()
-    if not token:
-        return ""
-
-    endpoint = os.getenv(
-        "HF_API_URL",
-        "https://api-inference.huggingface.co/models/distilgpt2"
-    )
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "inputs": prompt,
-        "parameters": {
-            "max_new_tokens": max_new_tokens,
-            "temperature": 0.7,
-            "top_p": 0.9,
-            "return_full_text": False,
-            "repetition_penalty": 1.2
-        }
-    }
-
-    try:
-        resp = requests.post(endpoint, headers=headers, json=payload, timeout=45)
-        if resp.status_code >= 400:
-            return ""
-        data = resp.json()
-        if isinstance(data, list) and data and "generated_text" in data[0]:
-            text = data[0]["generated_text"].strip()
-            return text.split("\n\n")[0].strip()
-    except Exception:
-        return ""
-
-    return ""
-
+load_dotenv()
 
 def _ai_polish(prompt, max_new_tokens=90):
-    """Ask the model to extend a prompt into a short polished paragraph."""
-    api_text = _api_polish(prompt, max_new_tokens=max_new_tokens)
-    if api_text and len(api_text) > 20:
-        return api_text
+    """Ask the Gemini model to extend a prompt into a short polished paragraph."""
+    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    if not api_key:
+        return ""
 
     try:
-        local_generator = _get_local_generator()
-        out = local_generator(
-            prompt,
-            max_new_tokens=max_new_tokens,
-            num_return_sequences=1,
-            temperature=0.7,
-            top_p=0.9,
-            do_sample=True,
-            truncation=True,
-            pad_token_id=local_generator.tokenizer.eos_token_id,
-            repetition_penalty=1.2
+        client = genai.Client(api_key=api_key)
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                max_output_tokens=max_new_tokens,
+                temperature=0.5,  # Lower temperature for more focused responses
+                top_p=0.8
+            )
         )
-        text = out[0]["generated_text"]
-        if prompt in text:
-            text = text.replace(prompt, "").strip()
-        text = text.split("\n\n")[0]
-        return text.strip()
-    except Exception:
+        if response and response.text:
+            text = response.text.strip()
+            # Clean up any markdown formatting
+            text = text.replace("**", "").replace("##", "").strip()
+            return text
+    except Exception as e:
+        print(f"API Error: {e}")
         return ""
+    
+    return ""
 
 
 def generate_executive_summary(package):
@@ -121,11 +60,16 @@ def generate_executive_summary(package):
         f"and net income by {g.get('net_income_growth_pct', 0)}% over the period."
     )
 
-    prompt = f"Write a professional executive summary for a financial report. Facts: {base} Summary:"
-    ai_text = _ai_polish(prompt, max_new_tokens=70)
+    # Build a more specific prompt with explicit instructions
+    prompt = (
+        f"Based on these financial facts, write a concise professional summary (2-3 sentences max):\n"
+        f"{base}\n\n"
+        f"Summary:"
+    )
+    ai_text = _ai_polish(prompt, max_new_tokens=150)
 
-    if ai_text and len(ai_text) > 40:
-        return f"{base}\n\n{ai_text}"
+    if ai_text and len(ai_text.strip()) > 30:
+        return f"{base}\n\n{ai_text.strip()}"
     return base
 
 

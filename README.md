@@ -6,7 +6,7 @@
 - Automated computation of key financial metrics and ratios
 - Period-over-period growth tracking
 - Trend detection and anomaly flagging using z-scores
-- AI-generated executive summary using Hugging Face Transformers
+- AI-generated executive summary using the Gemini API
 - Rule-based insights and actionable recommendations
 - Interactive charts for revenue, expenses, cash flow, and assets
 - Downloadable text reports and processed CSV
@@ -17,15 +17,12 @@ python -m pip install -r requirements.txt
 ```
 
 ### Optional: Enable External AI API
-This project supports two generation modes:
-- API mode (preferred for assignment wording): Hugging Face Inference API
-- Local fallback mode: local Transformers model (distilgpt2/gpt2)
+This project uses the Gemini API:
+- Gemini API (gemini-2.5-flash)
 
-To enable API mode, set:
-```bash
-export HF_API_TOKEN="your_huggingface_token"
-# Optional custom endpoint:
-# export HF_API_URL="https://api-inference.huggingface.co/models/distilgpt2"
+To enable it, create a `.env` file in the root directory and set your API key:
+```env
+GEMINI_API_KEY="your_gemini_api_key_here"
 ```
 
 ## Run
@@ -45,7 +42,7 @@ Upload a CSV with these columns:
 A ready-to-use `sample_data.csv` ships with the project.
 
 ## Tech Stack
-Python • Pandas • NumPy • Hugging Face Transformers • Streamlit
+Python • Pandas • NumPy • Gemini API • Streamlit
 
 ## Submission Artifacts
 - Detailed implementation report: `IMPLEMENTATION_REPORT.md`
@@ -64,8 +61,8 @@ Python • Pandas • NumPy • Hugging Face Transformers • Streamlit
 
 ## References & Resources
 
-- [Hugging Face Documentation](https://huggingface.co/)
-- [Transformers Library](https://huggingface.co/docs/transformers)
+- [Gemini API Documentation](https://ai.google.dev/)
+- [Google AI Studio](https://aistudio.google.dev/)
 - [Pandas Documentation](https://pandas.pydata.org/docs/)
 - [NumPy Documentation](https://numpy.org/doc/)
 - [Streamlit Documentation](https://docs.streamlit.io/)
@@ -83,7 +80,7 @@ Python • Pandas • NumPy • Hugging Face Transformers • Streamlit
 
 ## Conclusion
 
-The Financial Report Generation System demonstrates practical application of Generative AI in automating financial analysis. By combining Pandas-based metric computation with Hugging Face narrative generation, we create an efficient tool that saves analyst time while keeping numerical accuracy deterministic.
+The Financial Report Generation System demonstrates practical application of Generative AI in automating financial analysis. By combining Pandas-based metric computation with Gemini narrative generation, we create an efficient tool that saves analyst time while keeping numerical accuracy deterministic.
 
 This project showcases:
 - Integration of modern AI APIs

@@ -15,8 +15,8 @@ This project builds an AI-assisted financial reporting system that:
   - Creates a structured summary package
 - `report_generator.py`:
   - Generates narrative report sections
-  - Supports API-based text generation (Hugging Face Inference API)
-  - Falls back to local Transformers model if API token is not configured
+  - Supports API-based text generation (Gemini API)
+- Uses Google Generative AI (Gemini)
 - `app.py`:
   - Streamlit UI for upload, analysis, visualization, and report download
 
@@ -32,7 +32,7 @@ This project builds an AI-assisted financial reporting system that:
 ## 4. Libraries and Tools
 - Python
 - Pandas, NumPy
-- Transformers (Hugging Face)
+- Google Generative AI (Gemini)
 - Requests (for API calls)
 - Streamlit
 
